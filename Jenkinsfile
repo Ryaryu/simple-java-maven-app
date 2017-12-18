@@ -1,13 +1,26 @@
-stage 'Preparando'
+stage 'Preparando Ambiente'
 node {
     sh 'docker login -u mvn-deployer -p spiderman 192.168.6.181:8082'
     sh 'docker login -u mvn-deployer -p spiderman 192.168.6.181:8083'
 }
 
-stage 'Construindo'
+stage 'Construindo e Testando'
 node {
     docker.image('192.168.6.181:8082/maven:3-alpine').inside('-v /root/.m2:/root/.m2') {
-        sh 'mvn -B -DskipTests clean package -s ./jenkins/scripts/settings.xml'
+        stage('Construindo') {
+            sh 'mvn -B -DskipTests clean package -s ./jenkins/scripts/settings.xml'
+        }
+        stage('Testando') {
+            sh 'mvn test'
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Deployando') {
+            sh './jenkins/scripts/deliver.sh'
+        }
     }
 }
 //node {
