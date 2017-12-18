@@ -3,6 +3,13 @@ node {
     sh 'docker login -u mvn-deployer -p spiderman 192.168.6.181:8082'
     sh 'docker login -u mvn-deployer -p spiderman 192.168.6.181:8083'
 }
+
+stage 'Construindo'
+node {
+    docker.image('192.168.6.181:8082/maven:3-alpine').inside('-v /root/.m2:/root/.m2') {
+        sh 'mvn -B -DskipTests clean package -s ./jenkins/scripts/settings.xml'
+    }
+}
 //node {
 //    checkout scm
 //
