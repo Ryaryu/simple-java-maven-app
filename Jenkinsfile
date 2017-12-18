@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'maven:3-alpine'
+            image '192.168.6.181:8082/maven:3-alpine'
             args '-v /root/.m2:/root/.m2'
         }
     }
@@ -9,6 +9,16 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'mvn -B -DskipTests clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
             }
         }
     }
