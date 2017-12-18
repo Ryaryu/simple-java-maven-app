@@ -4,7 +4,7 @@ node {
     sh 'docker login -u mvn-deployer -p spiderman 192.168.6.181:8083'
 }
 
-stage 'Construindo e Testando'
+stage 'Gerando Imagem Maven'
 node {
     docker.image('192.168.6.181:8082/maven:3-alpine').inside('-v /root/.m2:/root/.m2') {
         stage('Construindo') {
@@ -12,11 +12,7 @@ node {
         }
         stage('Testando') {
             sh 'mvn test'
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
+            junit 'target/surefire-reports/*.xml'
         }
         stage('Deployando') {
             sh './jenkins/scripts/deliver.sh'
